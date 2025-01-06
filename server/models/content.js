@@ -5,8 +5,8 @@ export const Content = sequelize.define(
   "contents",
   {
     content_id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     title: {
@@ -29,7 +29,7 @@ export const Content = sequelize.define(
       allowNull: false,
     },
     module_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
     },
   },

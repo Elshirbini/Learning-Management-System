@@ -5,8 +5,8 @@ export const Module = sequelize.define(
   "modules",
   {
     module_id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue : DataTypes.UUIDV4,
       primaryKey: true,
     },
     title: {

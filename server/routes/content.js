@@ -7,7 +7,7 @@ import { upload } from "../config/multer.js";
 const router = express.Router();
 
 router.post(
-  "/create-content",
+  "/create-content/:moduleId",
   verifyToken,
   restrictTo("admin", "instructor"),
   upload.single("file"),

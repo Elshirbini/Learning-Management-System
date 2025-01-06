@@ -66,8 +66,6 @@ Review.belongsTo(User, { foreignKey: "user_id", as: "User" });
 User.hasOne(Cart, { foreignKey: "user_id", as: "Cart", onDelete: "CASCADE" });
 Cart.belongsTo(User, { foreignKey: "user_id", as: "User" });
 
-
-
 //                      Relation between cart and cartItems (one-to-many)
 Cart.hasMany(CartItems, {
   foreignKey: "cart_id",
@@ -76,8 +74,6 @@ Cart.hasMany(CartItems, {
 });
 CartItems.belongsTo(Cart, { foreignKey: "cart_id", as: "Cart" });
 
-
-
 //                      Relation between course and cartItems (one-to-many)
 Course.hasMany(CartItems, {
   foreignKey: "course_id",
@@ -85,7 +81,5 @@ Course.hasMany(CartItems, {
   onDelete: "CASCADE",
 });
 CartItems.belongsTo(Course, { foreignKey: "course_id", as: "Course" });
-
-
 
 export { User, Course, Module, Content, Review, Cart, CartItems };
