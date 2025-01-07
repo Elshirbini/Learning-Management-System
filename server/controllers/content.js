@@ -50,7 +50,7 @@ export const createContent = asyncHandler(async (req, res, next) => {
     fileType = "video";
     duration = await getVideoDuration(file.buffer, file.originalname);
     if (duration >= 60) {
-      duration = `${Math.ceil(duration)}m`;
+      duration = `${Math.ceil(duration / 60)}m`;
     } else if (duration < 60) {
       duration = `${Math.ceil(duration)}s`;
     } else {
@@ -65,7 +65,7 @@ export const createContent = asyncHandler(async (req, res, next) => {
   }
 
   if (file.size > 524288000) {
-    throw new ApiError("The max size you can upload is 500MB");
+    throw new ApiError("The max file size allowed is 500MB", 400);
   }
 
   const module = await Module.findByPk(moduleId);
@@ -82,14 +82,18 @@ export const createContent = asyncHandler(async (req, res, next) => {
 
   const uploadResult = await S3.upload(params).promise();
 
+  if (!uploadResult.Location) {
+    throw new ApiError("File upload failed", 500);
+  }
+
   const content = await Content.create({
     title,
-    fileType: file.mimetype === "application/pdf" ? "pdf" : "video",
+    fileType,
     fileUrl: uploadResult.Location,
     order: +order,
     module_id: module.module_id,
     duration,
   });
 
-  res.status(201).json({ message: "File is uploaded successfully", content });
+  res.status(201).json({ message: "File uploaded successfully", content });
 });
