@@ -22,7 +22,7 @@ export const Content = sequelize.define(
       allowNull: false,
     },
     duration: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
     },
     order: {
       type: DataTypes.INTEGER,
