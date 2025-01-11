@@ -12,6 +12,10 @@ AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_KEY,
   region: process.env.AWS_REGION,
+  logger: console,
+  httpOptions: {
+    timeout: 300000,
+  },
 });
 
 const S3 = new AWS.S3();
@@ -79,9 +83,12 @@ export const uploadFile = asyncHandler(async (file, module) => {
     Key: fileName,
     Body: file.buffer,
     ContentType: file.mimetype,
+    PartSize: 10 * 1024 * 1024,
   };
 
   const uploadResult = await S3.upload(params).promise();
+
+  console.log(uploadResult);
 
   if (!uploadResult.Location) {
     throw new ApiError("File upload failed", 500);
@@ -90,4 +97,15 @@ export const uploadFile = asyncHandler(async (file, module) => {
   const results = { uploadResult, fileType, duration };
 
   return results;
+});
+
+export const deleteFile = asyncHandler(async (bucket, key) => {
+  const params = {
+    Bucket: bucket,
+    Key: key,
+  };
+  S3.deleteObject(params, (err, data) => {
+    if (err) throw new ApiError("Deleting file failed", 500);
+    console.log("File deleted successfully from S3:", key);
+  });
 });

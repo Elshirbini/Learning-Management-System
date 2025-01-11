@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import { ApiError } from "../utils/apiError.js";
 import { Module } from "../models/module.js";
 import { Content } from "../models/content.js";
-import { uploadFile } from "../utils/uploadFile.js";
+import { deleteFile, uploadFile } from "../utils/uploadFile.js";
 
 export const createContent = asyncHandler(async (req, res, next) => {
   const { title, order } = req.body;
@@ -17,11 +17,54 @@ export const createContent = asyncHandler(async (req, res, next) => {
   const content = await Content.create({
     title,
     fileType: results.fileType,
-    fileUrl: results.uploadResult.Location,
+    file: {
+      key: results.uploadResult.Key,
+      url: results.uploadResult.Location,
+      bucket: results.uploadResult.Bucket,
+    },
     order: +order,
     module_id: module.module_id,
     duration: results.duration,
   });
 
   res.status(201).json({ message: "File uploaded successfully", content });
+});
+
+export const updateContent = asyncHandler(async (req, res, next) => {
+  const { title, order } = req.body;
+  const { contentId } = req.params;
+  const file = req.file;
+
+  const contentDoc = await Content.findByPk(contentId);
+  if (!contentDoc) throw new ApiError("Content not found", 404);
+
+  const module = await Module.findByPk(contentDoc.module_id);
+
+  await deleteFile(contentDoc.file.bucket, contentDoc.file.key);
+
+  const results = await uploadFile(file, module);
+
+  const [numberOfUpdates, updatedContent] = await Content.update(
+    {
+      title,
+      fileType: results.fileType,
+      file: {
+        url: results.uploadResult.Location,
+        key: results.uploadResult.Key,
+        bucket: results.uploadResult.Bucket,
+      },
+      order: +order,
+      module_id: module.module_id,
+      duration: results.duration,
+    },
+    {
+      where: { content_id: contentId },
+      returning: true,
+    }
+  );
+
+
+  res
+    .status(201)
+    .json({ message: "File updated successfully", updatedContent });
 });

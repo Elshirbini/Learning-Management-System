@@ -17,8 +17,8 @@ export const Content = sequelize.define(
       type: DataTypes.ENUM("video", "pdf"),
       allowNull: false,
     },
-    fileUrl: {
-      type: DataTypes.STRING,
+    file: {
+      type: DataTypes.JSON,
       allowNull: false,
     },
     duration: {

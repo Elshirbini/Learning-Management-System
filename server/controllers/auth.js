@@ -216,6 +216,8 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
     }
   );
 
+  res.cookie("jwt", "", { maxAge: 1, secure: true, sameSite: "none" });
+
   res.status(200).json({
     message: "Your password change successfully",
     userId: updatedUser[0],
