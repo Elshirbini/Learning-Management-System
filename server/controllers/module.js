@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
-import { Course, Module } from "../models/index.js";
+import { Content, Course, Module } from "../models/index.js";
 import { ApiError } from "../utils/apiError.js";
+import { deleteFile } from "../utils/fileManager.js";
 
 export const getModules = asyncHandler(async (req, res, next) => {
   const { courseId } = req.params;
@@ -56,6 +57,26 @@ export const deleteModule = asyncHandler(async (req, res, next) => {
 
   const module = await Module.findByPk(moduleId);
   if (!module) throw new ApiError("Module not found", 404);
+
+  const files = await Content.findAll({
+    where: { module_id: moduleId },
+    attributes: ["file"],
+  });
+
+  const errors = [];
+  await Promise.all(
+    files.map(async (doc) => {
+      try {
+        await deleteFile(doc.file.bucket, doc.file.key);
+      } catch (error) {
+        errors.push(`Failed to delete file: ${doc.file.key}`);
+      }
+    })
+  );
+
+  if (errors.length > 0) {
+    throw new ApiError(errors.join(", "), 500);
+  }
 
   await module.destroy();
 

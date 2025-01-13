@@ -3,7 +3,7 @@ import { configDotenv } from "dotenv";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import asyncHandler from "express-async-handler";
-import { ApiError } from "../utils/apiError.js";
+import { ApiError } from "./apiError.js";
 import fs from "fs";
 import ffmpeg from "fluent-ffmpeg";
 configDotenv();

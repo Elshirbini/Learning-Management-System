@@ -1,8 +1,8 @@
 import asyncHandler from "express-async-handler";
 import { ApiError } from "../utils/apiError.js";
-import { Module } from "../models/module.js";
-import { Content } from "../models/content.js";
-import { deleteFile, uploadFile } from "../utils/uploadFile.js";
+import { Module } from "../models/index.js";
+import { Content } from "../models/index.js";
+import { deleteFile, uploadFile } from "../utils/fileManager.js";
 
 export const createContent = asyncHandler(async (req, res, next) => {
   const { title, order } = req.body;
@@ -63,8 +63,20 @@ export const updateContent = asyncHandler(async (req, res, next) => {
     }
   );
 
-
   res
     .status(201)
     .json({ message: "File updated successfully", updatedContent });
+});
+
+export const deleteContent = asyncHandler(async (req, res, next) => {
+  const { contentId } = req.params;
+
+  const content = await Content.findByPk(contentId);
+  if (!content) throw new ApiError("Content not found", 404);
+
+  await deleteFile(content.file.bucket, content.file.key);
+
+  await content.destroy();
+
+  res.status(200).json({ message: "File deleted successfully" });
 });
