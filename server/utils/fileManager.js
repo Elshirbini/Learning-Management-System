@@ -83,10 +83,14 @@ export const uploadFile = asyncHandler(async (file, module) => {
     Key: fileName,
     Body: file.buffer,
     ContentType: file.mimetype,
-    PartSize: 10 * 1024 * 1024,
   };
 
-  const uploadResult = await S3.upload(params).promise();
+  const options = {
+    PartSize: 10 * 1024 * 1024,
+    queueSize: 5,
+  };
+
+  const uploadResult = await S3.upload(params, options).promise();
 
   console.log(uploadResult);
 
