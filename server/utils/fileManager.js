@@ -14,8 +14,10 @@ AWS.config.update({
   region: process.env.AWS_REGION,
   logger: console,
   httpOptions: {
-    timeout: 300000,
+    timeout: 60000,
+    http2: true,
   },
+  maxRetries: 3,
 });
 
 const S3 = new AWS.S3();
