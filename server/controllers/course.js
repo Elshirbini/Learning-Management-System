@@ -134,7 +134,9 @@ export const deleteCourse = asyncHandler(async (req, res, next) => {
   const course = await Course.findByPk(courseId);
   if (!course) throw new ApiError("Course not found", 404);
 
-  await deleteFile(course.thumbnail.bucket, course.thumbnail.key);
+  if(course.thumbnail){
+    await deleteFile(course.thumbnail.bucket, course.thumbnail.key);
+  }
 
   await course.destroy();
 
