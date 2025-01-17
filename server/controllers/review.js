@@ -3,10 +3,7 @@ import { Course, Review, User } from "../models/index.js";
 import { ApiError } from "../utils/apiError.js";
 
 export const getReviews = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
   const { courseId } = req.params;
-
-  if (!user) throw new ApiError("User not found", 404);
 
   const course = await Course.findByPk(courseId);
   if (!course) throw new ApiError("Course not found", 404);
@@ -28,16 +25,13 @@ export const makeReview = asyncHandler(async (req, res, next) => {
   const { courseId } = req.params;
   const { rating, comment } = req.body;
 
-  const userDoc = await User.findByPk(user.user_id);
-  if (!userDoc) throw new ApiError("User not found", 404);
-
   const course = await Course.findByPk(courseId);
   if (!course) throw new ApiError("Course not found", 404);
 
   const review = await Review.create({
     rating,
     comment,
-    user_id: userDoc.user_id,
+    user_id: user.user_id,
     course_id: course.course_id,
   });
 

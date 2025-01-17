@@ -19,14 +19,10 @@ const cookieOptions = {
   secure: process.env.NODE_ENV === "production",
 };
 
-
 export const getUserInfo = asyncHandler(async (req, res, next) => {
   const { user } = req.user;
 
-  const userDoc = await User.findOne({ where: { user_id: user.user_id } });
-  if (!userDoc) throw new ApiError("User not found", 404);
-
-  res.status(200).json({ userDoc });
+  res.status(200).json({ user });
 });
 
 export const oAuthCallback = asyncHandler(async (req, res, next) => {

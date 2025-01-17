@@ -114,10 +114,7 @@ export const deleteCourse = asyncHandler(async (req, res, next) => {
 });
 
 export const searchCourse = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
   const { searchQuery } = req.query;
-
-  if (!user) throw new ApiError("User not found", 404);
 
   if (!searchQuery) throw new ApiError("Search query is required", 403);
 
