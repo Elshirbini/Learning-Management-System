@@ -13,7 +13,7 @@ const router = express.Router();
 router.get(
   "/get-modules/:courseId",
   verifyToken,
-  restrictTo("admin", "instructor", "student"),
+
   getModules
 );
 

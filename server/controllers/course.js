@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import { Course, User } from "../models/index.js";
+import { Course, User, Module, Content } from "../models/index.js";
 import { ApiError } from "../utils/apiError.js";
 import { Op } from "sequelize";
 
@@ -24,6 +24,44 @@ export const getCourses = asyncHandler(async (req, res, next) => {
   if (!courses.rows) throw new ApiError("No courses found", 404);
 
   res.status(200).json(courses);
+});
+
+export const getCourse = asyncHandler(async (req, res, next) => {
+  const { courseId } = req.params;
+
+  const course = await Course.findByPk(courseId);
+  if (!course) throw new ApiError("Course not found", 404);
+
+  const modules = await Module.findAll({
+    where: { course_id: courseId },
+    order: [["order", "ASC"]],
+  });
+  if (!modules || modules.length === 0) {
+    throw new ApiError("Modules not found", 404);
+  }
+
+  const modulesWithContent = await Promise.all(
+    modules.map(async (module) => {
+      const content = await Content.findAll({
+        where: { module_id: module.module_id },
+        attributes: ["content_id", "title", "fileType", "duration"],
+      });
+
+      return {
+        moduleId: module.module_id,
+        moduleTitle: module.title,
+        order: module.order,
+        content: content.map((item) => ({
+          contentId: item.content_id,
+          contentTitle: item.title,
+          contentFileType: item.fileType,
+          contentDuration: item.duration,
+        })),
+      };
+    })
+  );
+
+  res.status(200).json({ course, modulesWithContent });
 });
 
 export const createCourse = asyncHandler(async (req, res, next) => {

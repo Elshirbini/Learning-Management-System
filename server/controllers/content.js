@@ -1,8 +1,37 @@
 import asyncHandler from "express-async-handler";
 import { ApiError } from "../utils/apiError.js";
-import { Module } from "../models/index.js";
-import { Content } from "../models/index.js";
+import { Course, Module, Content } from "../models/index.js";
 import { deleteFile, uploadFile } from "../utils/fileManager.js";
+import { Purchase } from "../models/purchases.js";
+
+export const getContent = asyncHandler(async (req, res, next) => {
+  const { user } = req.user;
+  const { contentId } = req.params;
+
+  const content = await Content.findByPk(contentId);
+  if (!content) throw new ApiError("Content not found", 404);
+
+  const module = await Module.findByPk(content.module_id);
+  if (!module) throw new ApiError("Module not found", 404);
+
+  const course = await Course.findByPk(module.course_id);
+  if (!course) throw new ApiError("Course not found", 404);
+
+  console.log([course.course_id]);
+
+  const isPaid = await Purchase.findOne({
+    where: {
+      user_id: user.user_id,
+      course_id: [course.course_id],
+    },
+  });
+
+  if (!isPaid) {
+    throw new ApiError("You must pay this course to watch the content", 403);
+  }
+
+  res.status(200).json(content);
+});
 
 export const createContent = asyncHandler(async (req, res, next) => {
   const { title, order } = req.body;

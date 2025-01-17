@@ -4,6 +4,7 @@ import { restrictTo } from "../middlewares/restricting.js";
 import {
   createCourse,
   deleteCourse,
+  getCourse,
   getCourses,
   searchCourse,
   updateCourse,
@@ -11,9 +12,11 @@ import {
 
 const router = express.Router();
 
-router.get("/search-courses" , verifyToken , searchCourse )
+router.get("/search-courses", verifyToken, searchCourse);
 
 router.get("/get-courses/:category", verifyToken, getCourses);
+
+router.get("/get-course/:courseId", verifyToken, getCourse);
 
 router.post(
   "/create-course",

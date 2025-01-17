@@ -4,11 +4,14 @@ import { restrictTo } from "../middlewares/restricting.js";
 import {
   createContent,
   deleteContent,
+  getContent,
   updateContent,
 } from "../controllers/content.js";
 import { upload } from "../config/multer.js";
 
 const router = express.Router();
+
+router.get("/get-content/:contentId", verifyToken, getContent);
 
 router.post(
   "/create-content/:moduleId",
