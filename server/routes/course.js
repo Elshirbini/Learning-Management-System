@@ -9,6 +9,7 @@ import {
   searchCourse,
   updateCourse,
 } from "../controllers/course.js";
+import { upload } from "../config/multer.js";
 
 const router = express.Router();
 
@@ -22,12 +23,14 @@ router.post(
   "/create-course",
   verifyToken,
   restrictTo("admin", "instructor"),
+  upload.single("file"),
   createCourse
 );
 router.put(
   "/update-course/:courseId",
   verifyToken,
   restrictTo("admin", "instructor"),
+  upload.single("file"),
   updateCourse
 );
 

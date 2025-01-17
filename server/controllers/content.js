@@ -41,7 +41,7 @@ export const createContent = asyncHandler(async (req, res, next) => {
   const module = await Module.findByPk(moduleId);
   if (!module) throw new ApiError("Module not found", 404);
 
-  const results = await uploadFile(file, module);
+  const results = await uploadFile(file, module, "content");
 
   const content = await Content.create({
     title,
@@ -71,7 +71,7 @@ export const updateContent = asyncHandler(async (req, res, next) => {
 
   await deleteFile(contentDoc.file.bucket, contentDoc.file.key);
 
-  const results = await uploadFile(file, module);
+  const results = await uploadFile(file, module, "content");
 
   const [numberOfUpdates, updatedContent] = await Content.update(
     {

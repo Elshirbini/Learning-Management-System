@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import { Course, User, Module, Content } from "../models/index.js";
 import { ApiError } from "../utils/apiError.js";
 import { Op } from "sequelize";
+import { deleteFile, uploadFile } from "../utils/fileManager.js";
 
 export const getCourses = asyncHandler(async (req, res, next) => {
   const { page, pageSize } = req.query;
@@ -67,7 +68,9 @@ export const getCourse = asyncHandler(async (req, res, next) => {
 export const createCourse = asyncHandler(async (req, res, next) => {
   const { user } = req.user;
   const { title, description, category, language, price } = req.body;
-  // const thumbnail = req.file.path
+  const thumbnail = req.file;
+
+  const results = await uploadFile(thumbnail, null, "thumbnail");
 
   const userData = await User.findByPk(user.user_id);
 
@@ -77,7 +80,11 @@ export const createCourse = asyncHandler(async (req, res, next) => {
     category,
     language,
     price,
-    // thumbnail,
+    thumbnail: {
+      key: results.uploadResult.Key,
+      url: results.uploadResult.Location,
+      bucket: results.uploadResult.Bucket,
+    },
   });
 
   await course.setInstructor(userData);
@@ -88,15 +95,34 @@ export const createCourse = asyncHandler(async (req, res, next) => {
 export const updateCourse = asyncHandler(async (req, res, next) => {
   const { courseId } = req.params;
   const { title, description, category, language, price } = req.body;
+  const thumbnail = req.file;
+
+  const course = await Course.findByPk(courseId);
+  if (!course) throw new ApiError("Course not found", 404);
+
+  await deleteFile(course.thumbnail.bucket, course.thumbnail.key);
+
+  const results = await uploadFile(thumbnail, null, "thumbnail");
 
   const [numberOfUpdates, updatedCourses] = await Course.update(
-    { title, description, category, language, price },
+    {
+      title,
+      description,
+      category,
+      language,
+      price,
+      thumbnail: {
+        key: results.uploadResult.Key,
+        url: results.uploadResult.Location,
+        bucket: results.uploadResult.Bucket,
+      },
+    },
     { where: { course_id: courseId }, returning: true }
   );
 
   if (numberOfUpdates === 0) throw new ApiError("Course not found", 404);
 
-  res.status("200").json({
+  res.status(200).json({
     message: "Course updated successfully",
     course: updatedCourses[0],
   });
@@ -107,6 +133,8 @@ export const deleteCourse = asyncHandler(async (req, res, next) => {
 
   const course = await Course.findByPk(courseId);
   if (!course) throw new ApiError("Course not found", 404);
+
+  await deleteFile(course.thumbnail.bucket, course.thumbnail.key);
 
   await course.destroy();
 

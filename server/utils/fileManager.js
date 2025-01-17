@@ -49,36 +49,49 @@ const getVideoDuration = (fileBuffer, fileName) => {
   });
 };
 
-export const uploadFile = asyncHandler(async (file, module) => {
-  if (!file) throw new ApiError("File is required", 400);
-
+export const uploadFile = async (file, module , type) => {
+  let fileName;
   let fileType;
   let duration;
-  if (file.mimetype === "application/pdf") {
-    fileType = "pdf";
-  } else if (file.mimetype === "video/mp4") {
-    fileType = "video";
-    duration = await getVideoDuration(file.buffer, file.originalname);
-    if (duration >= 60) {
-      duration = `${Math.ceil(duration / 60)}m`;
-    } else if (duration < 60) {
-      duration = `${Math.ceil(duration)}s`;
-    } else {
-      duration = null;
-    }
-  }
-
-  const allowedMimetype = ["application/pdf", "video/mp4"];
-
-  if (!allowedMimetype.includes(file.mimetype)) {
-    throw new ApiError("File extension is not allowed", 400);
-  }
+  if (!file) throw new ApiError("File is required", 400);
 
   if (file.size > 524288000) {
     throw new ApiError("The max file size allowed is 500MB", 400);
   }
 
-  const fileName = `Content/${module.course_id}/${module.module_id}/${file.originalname}`;
+  if (type === "content") {
+    const allowedMimetype = ["application/pdf", "video/mp4"];
+    if (!allowedMimetype.includes(file.mimetype)) {
+      throw new ApiError("File extension is not allowed", 400);
+    }
+
+    if (file.mimetype === "application/pdf") {
+      fileType = "pdf";
+    } else if (file.mimetype === "video/mp4") {
+      fileType = "video";
+      duration = await getVideoDuration(file.buffer, file.originalname);
+      if (duration >= 60) {
+        duration = `${Math.ceil(duration / 60)}m`;
+      } else if (duration < 60) {
+        duration = `${Math.ceil(duration)}s`;
+      } else {
+        duration = null;
+      }
+    }
+
+    fileName = `Content/${module.course_id}/${module.module_id}/${file.originalname}`;
+  } else {
+    const allowedMimetype = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+    if (!allowedMimetype.includes(file.mimetype)) {
+      throw new ApiError("File extension is not allowed", 400);
+    }
+    fileName = `Thumbnails/${file.originalname}`;
+  }
 
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
@@ -94,16 +107,14 @@ export const uploadFile = asyncHandler(async (file, module) => {
 
   const uploadResult = await S3.upload(params, options).promise();
 
-  console.log(uploadResult);
-
   if (!uploadResult.Location) {
     throw new ApiError("File upload failed", 500);
   }
 
-  const results = { uploadResult, fileType, duration };
+  const results = { uploadResult, fileType , duration };
 
   return results;
-});
+};
 
 export const deleteFile = asyncHandler(async (bucket, key) => {
   const params = {

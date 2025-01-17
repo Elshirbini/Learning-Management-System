@@ -1,7 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
 
-
 export const Course = sequelize.define(
   "courses",
   {
@@ -26,7 +25,7 @@ export const Course = sequelize.define(
       allowNull: false,
     },
     thumbnail: {
-      type: DataTypes.STRING,
+      type: DataTypes.JSON,
     },
     category: {
       type: DataTypes.ENUM("Web", "Mobile", "Security", "Database", "Cloud"),
