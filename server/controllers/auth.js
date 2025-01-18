@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { configDotenv } from "dotenv";
 import { validationResult } from "express-validator";
@@ -53,7 +53,7 @@ export const signup = asyncHandler(async (req, res, next) => {
 
   sendToEmail(
     email,
-    "Reset Your Password",
+    "Verify your email",
     `Paste Your Verification code ${code} \n\nThis Verification code will be valid for 10 min`
   );
 
@@ -79,20 +79,11 @@ export const verifyEmail = asyncHandler(async (req, res, next) => {
 
   res.cookie("jwt", token, cookieOptions);
 
-  const mailOptions = {
-    from: "ahmedalshirbini33@gmail.com",
-    to: email,
-    subject: "Welcome for you in my E-Learning App",
-    text: " Your account Created Successfully",
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
+  sendToEmail(
+    email,
+    "Welcome for you in my E-Learning App",
+    " Your account Created Successfully"
+  );
 
   res.status(201).json({ message: "Account created successfully!", user });
 });
