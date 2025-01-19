@@ -30,7 +30,7 @@ services:
   redis:
     image: redis:latest
     ports:
-      - "6379:6379"
+      - "14739:14739"
     volumes:
       - redis_data:/data
     restart: unless-stopped

@@ -2,7 +2,6 @@ import asyncHandler from "express-async-handler";
 import { ApiError } from "../utils/apiError.js";
 import { Cart, CartItems, Course } from "../models/index.js";
 
-
 export const getCart = asyncHandler(async (req, res, next) => {
   const { user } = req.user;
 

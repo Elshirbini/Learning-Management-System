@@ -64,8 +64,9 @@ export const verifyEmail = asyncHandler(async (req, res, next) => {
   const { code } = req.body;
 
   const userData = await redisClient.get(code);
-  if (!userData)
+  if (!userData) {
     throw new ApiError("Invalid or expired verification code", 400);
+  }
 
   const { email, name, hashedPassword } = JSON.parse(userData);
 
