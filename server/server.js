@@ -42,11 +42,12 @@ app.use(
   })
 );
 app.post("/webhook", express.raw({ type: "application/json" }), webhook);
-app.use(express.json());
 app.use(cookieParser());
+app.use(express.json());
 app.use(compression());
 app.use(xss());
 app.use(helmet());
+
 app.use("/api/auth", authLimit);
 app.use("/api", apiLimit);
 
@@ -55,8 +56,6 @@ app.use("/api", apiLimit);
 app.get("/", (req, res) => {
   res.send("<a href='/api/auth/google'>Authenticate with google</a>");
 });
-
-
 
 app.use("/api/auth", authRoutes);
 app.use("/api/course", courseRoutes);

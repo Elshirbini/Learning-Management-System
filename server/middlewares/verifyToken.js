@@ -7,8 +7,8 @@ configDotenv();
 
 export const verifyToken = asyncHandler(async (req, res, next) => {
   let token;
-  if (req.headers.cookie) {
-    token = req.headers.cookie.split("jwt=")[1];
+  if (req.cookies["jwt"]) {
+    token = req.cookies["jwt"]
   }
 
   if (!token) return next(new ApiError("You are not authenticated.", 400));

@@ -17,6 +17,7 @@ const cookieOptions = {
   maxAge,
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
+  sameSite: "strict",
 };
 
 export const getUserInfo = asyncHandler(async (req, res, next) => {
