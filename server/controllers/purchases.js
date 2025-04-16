@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { Coupon } from "../models/coupon.js";
 import { Op } from "sequelize";
 import { Purchase } from "../models/purchases.js";
+import { sendToEmail } from "../utils/sendToEmails.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const getPurchases = asyncHandler(async (req, res, next) => {
@@ -13,13 +14,13 @@ export const getPurchases = asyncHandler(async (req, res, next) => {
 });
 
 export const checkoutSession = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const userId = req.userId;
   const { couponCode } = req.body;
   let totalCost;
 
-  if (!user) throw new ApiError("No user found", 404);
+  const user = await User.findByPk(userId);
 
-  const cart = await Cart.findOne({ where: { user_id: user.user_id } });
+  const cart = await Cart.findOne({ where: { user_id: userId } });
   if (!cart) throw new ApiError("No carts found", 404);
 
   if (couponCode) {
@@ -92,8 +93,8 @@ const makePurchase = asyncHandler(async (session) => {
 
   if (!purchase) throw new ApiError("Error occurred", 404);
 
-  sendToEmail(
-    email,
+  await sendToEmail(
+    user.email,
     "Payment Confirmation",
     `Dear ${user.name},\n\nYour payment of $${totalCost} for the/s course/s (ID: ${itemsId}) has been successfully processed.\n\nThank you for choosing our platform!`
   );

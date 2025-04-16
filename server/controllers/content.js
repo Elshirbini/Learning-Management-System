@@ -5,7 +5,7 @@ import { deleteFile, uploadFile } from "../utils/fileManager.js";
 import { Purchase } from "../models/purchases.js";
 
 export const getContent = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const  userId = req.userId;
   const { contentId } = req.params;
 
   const content = await Content.findByPk(contentId);
@@ -21,7 +21,7 @@ export const getContent = asyncHandler(async (req, res, next) => {
 
   const isPaid = await Purchase.findOne({
     where: {
-      user_id: user.user_id,
+      user_id: userId,
       course_id: [course.course_id],
     },
   });

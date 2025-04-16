@@ -66,13 +66,13 @@ export const getCourse = asyncHandler(async (req, res, next) => {
 });
 
 export const createCourse = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const userId = req.userId;
   const { title, description, category, language, price } = req.body;
   const thumbnail = req.file;
 
   const results = await uploadFile(thumbnail, null, "thumbnail");
 
-  const userData = await User.findByPk(user.user_id);
+  const userData = await User.findByPk(userId);
 
   const course = await Course.create({
     title,
@@ -134,7 +134,7 @@ export const deleteCourse = asyncHandler(async (req, res, next) => {
   const course = await Course.findByPk(courseId);
   if (!course) throw new ApiError("Course not found", 404);
 
-  if(course.thumbnail){
+  if (course.thumbnail) {
     await deleteFile(course.thumbnail.bucket, course.thumbnail.key);
   }
 

@@ -4,7 +4,7 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import asyncHandler from "express-async-handler";
 import { ApiError } from "./apiError.js";
-import fs from "fs";
+import { promises as fsPromises } from "fs";
 import ffmpeg from "fluent-ffmpeg";
 configDotenv();
 
@@ -24,20 +24,21 @@ const S3 = new AWS.S3();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const getVideoDuration = (fileBuffer, fileName) => {
+const getVideoDuration = async (fileBuffer, fileName) => {
+  const tempDir = path.join(__dirname, "temp");
+
+  // تأكد إن الفولدر موجود
+  await fsPromises.mkdir(tempDir, { recursive: true });
+
+  const tempFilePath = path.join(tempDir, fileName);
+
+  // احفظ الفايل مؤقتًا
+  await fsPromises.writeFile(tempFilePath, fileBuffer);
+
   return new Promise((resolve, reject) => {
-    const tempDir = path.join(__dirname, "temp");
-
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-
-    const tempFilePath = path.join(tempDir, fileName);
-
-    fs.writeFileSync(tempFilePath, fileBuffer);
-
-    ffmpeg.ffprobe(tempFilePath, (err, metadata) => {
-      fs.unlinkSync(tempFilePath);
+    ffmpeg.ffprobe(tempFilePath, async (err, metadata) => {
+      // احذف الفايل المؤقت بعد التحليل
+      await fsPromises.unlink(tempFilePath).catch(() => {}); // عشان نتفادى crash لو الملف مش موجود
 
       if (err) {
         console.error(`Error in ffprobe: ${err.message}`);
@@ -49,7 +50,7 @@ const getVideoDuration = (fileBuffer, fileName) => {
   });
 };
 
-export const uploadFile = async (file, module , type) => {
+export const uploadFile = async (file, module, type) => {
   let fileName;
   let fileType;
   let duration;
@@ -70,13 +71,10 @@ export const uploadFile = async (file, module , type) => {
     } else if (file.mimetype === "video/mp4") {
       fileType = "video";
       duration = await getVideoDuration(file.buffer, file.originalname);
-      if (duration >= 60) {
-        duration = `${Math.ceil(duration / 60)}m`;
-      } else if (duration < 60) {
-        duration = `${Math.ceil(duration)}s`;
-      } else {
-        duration = null;
-      }
+      duration =
+        duration >= 60
+          ? `${Math.ceil(duration / 60)}m`
+          : `${Math.ceil(duration)}s`;
     }
 
     fileName = `Content/${module.course_id}/${module.module_id}/${file.originalname}`;
@@ -111,16 +109,14 @@ export const uploadFile = async (file, module , type) => {
     throw new ApiError("File upload failed", 500);
   }
 
-  const results = { uploadResult, fileType , duration };
+  const results = { uploadResult, fileType, duration };
 
   return results;
 };
 
 export const deleteFile = asyncHandler(async (bucket, key) => {
-  const params = {
-    Bucket: bucket,
-    Key: key,
-  };
+  const params = { Bucket: bucket, Key: key };
+
   S3.deleteObject(params, (err, data) => {
     if (err) throw new ApiError("Deleting file failed", 500);
     console.log("File deleted successfully from S3:", key);

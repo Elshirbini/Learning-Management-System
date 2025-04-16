@@ -26,8 +26,19 @@ passport.use(
           });
         }
 
-        const token = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
-          expiresIn: 1 * 24 * 60 * 60 * 1000,
+        const token = await new Promise((resolve, reject) => {
+          jwt.sign(
+            { id: user.user_id, role: user.role },
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+              expiresIn: 1 * 24 * 60 * 60 * 1000,
+            },
+            (err, token) => {
+              if (err)
+                return reject(new ApiError("Error in signing token", 501));
+              resolve(token);
+            }
+          );
         });
 
         return done(null, { token });

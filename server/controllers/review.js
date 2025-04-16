@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import { Course, Review, User } from "../models/index.js";
+import { Course, Review } from "../models/index.js";
 import { ApiError } from "../utils/apiError.js";
 
 export const getReviews = asyncHandler(async (req, res, next) => {
@@ -21,7 +21,7 @@ export const getReviews = asyncHandler(async (req, res, next) => {
 });
 
 export const makeReview = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const userId = req.userId;
   const { courseId } = req.params;
   const { rating, comment } = req.body;
 
@@ -31,7 +31,7 @@ export const makeReview = asyncHandler(async (req, res, next) => {
   const review = await Review.create({
     rating,
     comment,
-    user_id: user.user_id,
+    user_id: userId,
     course_id: course.course_id,
   });
 
@@ -39,8 +39,8 @@ export const makeReview = asyncHandler(async (req, res, next) => {
 });
 
 export const updateReview = asyncHandler(async (req, res, next) => {
+  const userId = req.userId;
   const { reviewId } = req.params;
-  const { user } = req.user;
   const { rating, comment } = req.body;
 
   const [numberOfUpdates, updatedReviews] = await Review.update(
@@ -48,7 +48,7 @@ export const updateReview = asyncHandler(async (req, res, next) => {
       rating,
       comment,
     },
-    { where: { review_id: reviewId, user_id: user.user_id }, returning: true }
+    { where: { review_id: reviewId, user_id: userId }, returning: true }
   );
 
   if (!updatedReviews || updatedReviews.length === 0) {
@@ -59,11 +59,11 @@ export const updateReview = asyncHandler(async (req, res, next) => {
 });
 
 export const deleteReview = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const userId = req.userId;
   const { reviewId } = req.params;
 
   const review = await Review.findOne({
-    where: { user_id: user.user_id, review_id: reviewId },
+    where: { user_id: userId, review_id: reviewId },
   });
 
   if (!review) throw new ApiError("Review not found", 404);

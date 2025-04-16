@@ -21,15 +21,16 @@ const cookieOptions = {
 };
 
 export const getUserInfo = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const userId = req.userId;
+  const user = await User.findByPk(userId);
 
   res.status(200).json({ user });
 });
 
 export const oAuthCallback = asyncHandler(async (req, res, next) => {
-  const { token } = req.user;
+  const token = req.user.token;
 
-  res.cookie("jwt", token, cookieOptions);
+  res.cookie("accessToken", token, cookieOptions);
 
   res.status(200).redirect("/");
 });
@@ -52,7 +53,7 @@ export const signup = asyncHandler(async (req, res, next) => {
 
   await redisClient.setEx(code, 600, JSON.stringify({ ...userData }));
 
-  sendToEmail(
+  await sendToEmail(
     email,
     "Verify your email",
     `Paste Your Verification code ${code} \n\nThis Verification code will be valid for 10 min`
@@ -75,13 +76,23 @@ export const verifyEmail = asyncHandler(async (req, res, next) => {
 
   await redisClient.del(code);
 
-  const token = jwt.sign({ user: user }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: maxAge,
+  const token = new Promise((resolve, reject) => {
+    jwt.sign(
+      { id: user.user_id, role: user.role },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: maxAge,
+      },
+      (err, token) => {
+        if (err) return reject(new ApiError("Error in signing token", 501));
+        resolve(token);
+      }
+    );
   });
 
-  res.cookie("jwt", token, cookieOptions);
+  res.cookie("accessToken", token, cookieOptions);
 
-  sendToEmail(
+  await sendToEmail(
     email,
     "Welcome for you in my E-Learning App",
     " Your account Created Successfully"
@@ -104,17 +115,27 @@ export const login = asyncHandler(async (req, res, next) => {
 
   if (!isPassEq) throw new ApiError("Password Wrong", 401);
 
-  const token = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: maxAge,
+  const token = await new Promise((resolve, reject) => {
+    jwt.sign(
+      { id: user.user_id, role: user.role },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: maxAge,
+      },
+      (err, token) => {
+        if (err) return reject(new ApiError("Error in signing token", 501));
+        resolve(token);
+      }
+    );
   });
 
-  res.cookie("jwt", token, cookieOptions);
+  res.cookie("accessToken", token, cookieOptions);
 
   res.status(200).json({ user });
 });
 
 export const logout = asyncHandler(async (req, res, next) => {
-  res.cookie("jwt", "", { maxAge: 1, secure: true, sameSite: "none" });
+  res.clearCookie("accessToken");
 
   res.status(200).json({ message: "Logout successfully" });
 });
@@ -138,7 +159,7 @@ export const sendTokenToEmail = asyncHandler(async (req, res, next) => {
 
   if (!updatedUser) throw new ApiError("This email has no account", 403);
 
-  sendToEmail(
+  await sendToEmail(
     email,
     "Reset Your Password",
     `Paste Your Verification code ${code} \n\nThis Verification code will be valid for 10 min`
@@ -205,7 +226,7 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
     }
   );
 
-  res.cookie("jwt", "", { maxAge: 1, secure: true, sameSite: "none" });
+  res.clearCookie("accessToken");
 
   res.status(200).json({
     message: "Your password change successfully",
@@ -214,7 +235,7 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
 });
 
 export const editProfile = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const userId = req.userId;
   const { name, phone } = req.body;
 
   const [numberOfUpdates, updatedUser] = await User.update(
@@ -223,7 +244,7 @@ export const editProfile = asyncHandler(async (req, res, next) => {
       phone,
     },
     {
-      where: { user_id: user.user_id },
+      where: { user_id: userId },
       returning: true,
     }
   );

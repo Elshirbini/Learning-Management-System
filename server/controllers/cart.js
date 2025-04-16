@@ -3,9 +3,9 @@ import { ApiError } from "../utils/apiError.js";
 import { Cart, CartItems, Course } from "../models/index.js";
 
 export const getCart = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const userId = req.userId;
 
-  const cart = await Cart.findOne({ where: { user_id: user.user_id } });
+  const cart = await Cart.findOne({ where: { user_id: userId } });
   if (!cart) throw new ApiError("Cart not found", 404);
 
   const cartItems = await CartItems.findAll({
@@ -20,7 +20,7 @@ export const getCart = asyncHandler(async (req, res, next) => {
 });
 
 export const addToCart = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const userId = req.userId;
   const { courseId, price } = req.body;
 
   const course = await Course.findByPk(courseId);
@@ -29,7 +29,7 @@ export const addToCart = asyncHandler(async (req, res, next) => {
     throw new ApiError("Product not found or invalid request", 404);
   }
 
-  const cart = await Cart.findOne({ where: { user_id: user.user_id } });
+  const cart = await Cart.findOne({ where: { user_id: userId } });
 
   if (cart) {
     const cartItem = await CartItems.findOne({
@@ -57,7 +57,7 @@ export const addToCart = asyncHandler(async (req, res, next) => {
       updatedCartItem,
     });
   } else {
-    const cart = await Cart.create({ user_id: user.user_id });
+    const cart = await Cart.create({ user_id: userId });
 
     const cartItem = await CartItems.create({
       course_id: courseId,
@@ -80,7 +80,7 @@ export const addToCart = asyncHandler(async (req, res, next) => {
 });
 
 export const removeFromCart = asyncHandler(async (req, res, next) => {
-  const { user } = req.user;
+  const userId = req.userId;
   const { itemId } = req.params;
 
   const cartItem = await CartItems.findOne({ where: { item_id: itemId } });

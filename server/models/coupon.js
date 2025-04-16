@@ -23,5 +23,5 @@ export const Coupon = sequelize.define(
       allowNull: false,
     },
   },
-  { timestamps: true }
+  { indexes: [{ fields: ["coupon_id"] }], timestamps: true }
 );

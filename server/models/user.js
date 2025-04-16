@@ -57,6 +57,11 @@ export const User = sequelize.define(
         }
       },
     },
+    indexes: [
+      {
+        fields: ["user_id"],
+      },
+    ],
     timestamps: true,
   }
 );

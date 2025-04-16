@@ -1,10 +1,10 @@
 import express from "express";
-import xss from "xss-clean";
 import helmet from "helmet";
 import compression from "compression";
 import rateLimiter from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import morgan from "morgan";
 import { configDotenv } from "dotenv";
 import { errorHandling } from "./middlewares/errorHandling.js";
 import { ApiError } from "./utils/apiError.js";
@@ -34,6 +34,9 @@ const authLimit = rateLimiter({
     "Too many login attempts from this IP, please try again after 15 minutes!",
 });
 
+//                                 **Middlewares**
+
+app.use(morgan("dev"));
 app.use(
   cors({
     origin: "*",
@@ -45,7 +48,6 @@ app.post("/webhook", express.raw({ type: "application/json" }), webhook);
 app.use(cookieParser());
 app.use(express.json());
 app.use(compression());
-app.use(xss());
 app.use(helmet());
 
 app.use("/api/auth", authLimit);
@@ -66,13 +68,12 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/coupon", couponRoutes);
 app.use("/api/purchases", purchasesRoutes);
 
-app.use("/favicon.ico", express.static("./favicon.ico"));
 
-app.all("*", (req, res, next) => {
-  next(new ApiError(`Can't find this route : ${req.originalUrl}`, 400));
-});
+//                                 **Global error handler**
 
 app.use(errorHandling);
+
+//                                 **Start Server**
 
 app.listen(process.env.PORT, async () => {
   try {
@@ -86,5 +87,10 @@ app.listen(process.env.PORT, async () => {
 
 process.on("unhandledRejection", (err) => {
   console.error(`Unhandled Rejection Errors : ${err.name} | ${err.message}`);
+  process.exit(1);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error(`Uncaught Exception Errors : ${err.name} | ${err.message}`);
   process.exit(1);
 });

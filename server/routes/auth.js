@@ -60,9 +60,9 @@ router.patch("/logout", logout);
 
 router.put("/edit-profile", verifyToken, editProfile);
 
-router.patch("/send-code-to-email", sendTokenToEmail);
+router.post("/send-code-to-email", sendTokenToEmail);
 
-router.patch("/validate-code/:userId", validateCode);
+router.post("/validate-code/:userId", validateCode);
 
 router.put(
   "/reset-password/:userId",

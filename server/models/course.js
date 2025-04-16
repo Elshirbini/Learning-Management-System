@@ -37,5 +37,5 @@ export const Course = sequelize.define(
       defaultValue: "English",
     },
   },
-  { timestamps: true }
+  { indexes: [{ fields: ["course_id"] }], timestamps: true }
 );
