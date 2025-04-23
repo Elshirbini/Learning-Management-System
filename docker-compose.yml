@@ -8,7 +8,6 @@ services:
     env_file: ./server/.env
     depends_on:
       - postgres
-      - redis
     volumes:
       - ./server:/app
       - /app/node_modules
@@ -22,19 +21,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    restart: unless-stopped
-
-  redis:
-    image: redis:latest
-    ports:
-      - "14739:14739"
-    volumes:
-      - redis_data:/data
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-2525}
+      POSTGRES_DB: ${DB_NAME:-LMS}
     restart: unless-stopped
 
 volumes:
   postgres_data:
-  redis_data:

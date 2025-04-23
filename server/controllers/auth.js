@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import asyncHandler from "express-async-handler";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { configDotenv } from "dotenv";
@@ -20,22 +19,22 @@ const cookieOptions = {
   sameSite: "strict",
 };
 
-export const getUserInfo = asyncHandler(async (req, res, next) => {
+export const getUserInfo = async (req, res, next) => {
   const userId = req.userId;
   const user = await User.findByPk(userId);
 
   res.status(200).json({ user });
-});
+};
 
-export const oAuthCallback = asyncHandler(async (req, res, next) => {
+export const oAuthCallback = async (req, res, next) => {
   const token = req.user.token;
 
   res.cookie("accessToken", token, cookieOptions);
 
   res.status(200).redirect("/");
-});
+};
 
-export const signup = asyncHandler(async (req, res, next) => {
+export const signup = async (req, res, next) => {
   const { email, name, password, confirmPassword } = req.body;
   const errors = validationResult(req);
 
@@ -60,9 +59,9 @@ export const signup = asyncHandler(async (req, res, next) => {
   );
 
   res.status(200).json({ message: "Verifying email" });
-});
+};
 
-export const verifyEmail = asyncHandler(async (req, res, next) => {
+export const verifyEmail = async (req, res, next) => {
   const { code } = req.body;
 
   const userData = await redisClient.get(code);
@@ -99,9 +98,9 @@ export const verifyEmail = asyncHandler(async (req, res, next) => {
   );
 
   res.status(201).json({ message: "Account created successfully!", user });
-});
+};
 
-export const login = asyncHandler(async (req, res, next) => {
+export const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ where: { email: email } });
@@ -132,15 +131,15 @@ export const login = asyncHandler(async (req, res, next) => {
   res.cookie("accessToken", token, cookieOptions);
 
   res.status(200).json({ user });
-});
+};
 
-export const logout = asyncHandler(async (req, res, next) => {
+export const logout = async (req, res, next) => {
   res.clearCookie("accessToken");
 
   res.status(200).json({ message: "Logout successfully" });
-});
+};
 
-export const sendTokenToEmail = asyncHandler(async (req, res, next) => {
+export const sendTokenToEmail = async (req, res, next) => {
   const { email } = req.body;
 
   const code = crypto.randomBytes(3).toString("hex");
@@ -169,9 +168,9 @@ export const sendTokenToEmail = asyncHandler(async (req, res, next) => {
     message: "Code sent successfully",
     userId: updatedUser[0].user_id,
   });
-});
+};
 
-export const validateCode = asyncHandler(async (req, res, next) => {
+export const validateCode = async (req, res, next) => {
   const { code } = req.body;
   const { userId } = req.params;
 
@@ -190,9 +189,9 @@ export const validateCode = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json({ user });
-});
+};
 
-export const resetPassword = asyncHandler(async (req, res, next) => {
+export const resetPassword = async (req, res, next) => {
   const { userId } = req.params;
   const { newPassword, confirmPassword } = req.body;
   const errors = validationResult(req);
@@ -232,9 +231,9 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
     message: "Your password change successfully",
     userId: updatedUser[0],
   });
-});
+};
 
-export const editProfile = asyncHandler(async (req, res, next) => {
+export const editProfile = async (req, res, next) => {
   const userId = req.userId;
   const { name, phone } = req.body;
 
@@ -255,4 +254,4 @@ export const editProfile = asyncHandler(async (req, res, next) => {
     message: "Profile edited successfully",
     user: updatedUser[0],
   });
-});
+};

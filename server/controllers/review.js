@@ -1,8 +1,7 @@
-import asyncHandler from "express-async-handler";
 import { Course, Review } from "../models/index.js";
 import { ApiError } from "../utils/apiError.js";
 
-export const getReviews = asyncHandler(async (req, res, next) => {
+export const getReviews = async (req, res, next) => {
   const { courseId } = req.params;
 
   const course = await Course.findByPk(courseId);
@@ -18,9 +17,9 @@ export const getReviews = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json(reviews);
-});
+};
 
-export const makeReview = asyncHandler(async (req, res, next) => {
+export const makeReview = async (req, res, next) => {
   const userId = req.userId;
   const { courseId } = req.params;
   const { rating, comment } = req.body;
@@ -36,9 +35,9 @@ export const makeReview = asyncHandler(async (req, res, next) => {
   });
 
   res.status(201).json({ review });
-});
+};
 
-export const updateReview = asyncHandler(async (req, res, next) => {
+export const updateReview = async (req, res, next) => {
   const userId = req.userId;
   const { reviewId } = req.params;
   const { rating, comment } = req.body;
@@ -56,9 +55,9 @@ export const updateReview = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json({ review: updatedReviews[0] });
-});
+};
 
-export const deleteReview = asyncHandler(async (req, res, next) => {
+export const deleteReview = async (req, res, next) => {
   const userId = req.userId;
   const { reviewId } = req.params;
 
@@ -71,4 +70,4 @@ export const deleteReview = asyncHandler(async (req, res, next) => {
   await review.destroy();
 
   res.status(200).json({ message: "Review deleted successfully" });
-});
+};

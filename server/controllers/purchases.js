@@ -1,4 +1,3 @@
-import asyncHandler from "express-async-handler";
 import { ApiError } from "../utils/apiError.js";
 import { Cart, CartItems, User } from "../models/index.js";
 import Stripe from "stripe";
@@ -8,12 +7,12 @@ import { Purchase } from "../models/purchases.js";
 import { sendToEmail } from "../utils/sendToEmails.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-export const getPurchases = asyncHandler(async (req, res, next) => {
+export const getPurchases = async (req, res, next) => {
   const purchases = await Purchase.findAll();
   res.status(200).json({ purchases });
-});
+};
 
-export const checkoutSession = asyncHandler(async (req, res, next) => {
+export const checkoutSession = async (req, res, next) => {
   const userId = req.userId;
   const { couponCode } = req.body;
   let totalCost;
@@ -61,9 +60,9 @@ export const checkoutSession = asyncHandler(async (req, res, next) => {
   }
 
   res.status(201).json({ message: "session Created successfully", session });
-});
+};
 
-const makePurchase = asyncHandler(async (session) => {
+const makePurchase = async (session) => {
   const email = session.customer_email;
   const cartId = session.client_reference_id;
   const totalCost = session.amount_total / 100;
@@ -100,9 +99,9 @@ const makePurchase = asyncHandler(async (session) => {
   );
 
   await cart.destroy();
-});
+};
 
-export const webhook = asyncHandler(async (req, res, next) => {
+export const webhook = async (req, res, next) => {
   const sig = req.headers["stripe-signature"];
   const endpointSecret = process.env.WEBHOOK_SECRET_KEY;
 
@@ -114,4 +113,4 @@ export const webhook = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json({ message: "Success" });
-});
+};

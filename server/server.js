@@ -7,7 +7,6 @@ import cors from "cors";
 import morgan from "morgan";
 import { configDotenv } from "dotenv";
 import { errorHandling } from "./middlewares/errorHandling.js";
-import { ApiError } from "./utils/apiError.js";
 import { authRoutes } from "./routes/auth.js";
 import sequelize from "./config/db.js";
 import { courseRoutes } from "./routes/course.js";

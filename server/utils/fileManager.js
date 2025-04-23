@@ -2,7 +2,6 @@ import AWS from "aws-sdk";
 import { configDotenv } from "dotenv";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
-import asyncHandler from "express-async-handler";
 import { ApiError } from "./apiError.js";
 import { promises as fsPromises } from "fs";
 import ffmpeg from "fluent-ffmpeg";
@@ -114,11 +113,11 @@ export const uploadFile = async (file, module, type) => {
   return results;
 };
 
-export const deleteFile = asyncHandler(async (bucket, key) => {
+export const deleteFile = async (bucket, key) => {
   const params = { Bucket: bucket, Key: key };
 
   S3.deleteObject(params, (err, data) => {
     if (err) throw new ApiError("Deleting file failed", 500);
     console.log("File deleted successfully from S3:", key);
   });
-});
+};

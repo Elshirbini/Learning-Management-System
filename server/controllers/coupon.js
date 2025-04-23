@@ -1,9 +1,8 @@
-import asyncHandler from "express-async-handler";
 import { ApiError } from "../utils/apiError.js";
 import { Coupon } from "../models/coupon.js";
 import couponCode from "coupon-code";
 
-export const getCoupon = asyncHandler(async (req, res, next) => {
+export const getCoupon = async (req, res, next) => {
   const { couponId } = req.params;
 
   const coupon = await Coupon.findByPk(couponId);
@@ -11,9 +10,9 @@ export const getCoupon = asyncHandler(async (req, res, next) => {
   if (!coupon) throw new ApiError("No coupons found", 404);
 
   res.status(200).json(coupon);
-});
+};
 
-export const createCoupon = asyncHandler(async (req, res, next) => {
+export const createCoupon = async (req, res, next) => {
   const { discount, expires } = req.body;
 
   const date = Date.now();
@@ -27,9 +26,9 @@ export const createCoupon = asyncHandler(async (req, res, next) => {
   const coupon = await Coupon.create({ code, discount, expires });
 
   res.status(201).json({ message: "Coupon created successfully", coupon });
-});
+};
 
-export const updateCoupon = asyncHandler(async (req, res, next) => {
+export const updateCoupon = async (req, res, next) => {
   const { couponId } = req.params;
   const { discount, expires } = req.body;
 
@@ -52,9 +51,9 @@ export const updateCoupon = asyncHandler(async (req, res, next) => {
   res
     .status(200)
     .json({ message: "Coupon updated successfully", updateCoupon });
-});
+};
 
-export const deleteCoupon = asyncHandler(async (req, res, next) => {
+export const deleteCoupon = async (req, res, next) => {
   const { couponId } = req.params;
 
   const coupon = await Coupon.findOne({ where: { coupon_id: couponId } });
@@ -64,4 +63,4 @@ export const deleteCoupon = asyncHandler(async (req, res, next) => {
   await coupon.destroy();
 
   res.status(200).json({ message: "Coupon deleted successfully" });
-});
+};

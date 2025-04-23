@@ -1,8 +1,7 @@
-import asyncHandler from "express-async-handler";
 import { ApiError } from "../utils/apiError.js";
 import { Cart, CartItems, Course } from "../models/index.js";
 
-export const getCart = asyncHandler(async (req, res, next) => {
+export const getCart = async (req, res, next) => {
   const userId = req.userId;
 
   const cart = await Cart.findOne({ where: { user_id: userId } });
@@ -17,9 +16,9 @@ export const getCart = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json({ cart, cartItems });
-});
+};
 
-export const addToCart = asyncHandler(async (req, res, next) => {
+export const addToCart = async (req, res, next) => {
   const userId = req.userId;
   const { courseId, price } = req.body;
 
@@ -77,9 +76,9 @@ export const addToCart = asyncHandler(async (req, res, next) => {
       cartItem,
     });
   }
-});
+};
 
-export const removeFromCart = asyncHandler(async (req, res, next) => {
+export const removeFromCart = async (req, res, next) => {
   const userId = req.userId;
   const { itemId } = req.params;
 
@@ -103,7 +102,7 @@ export const removeFromCart = asyncHandler(async (req, res, next) => {
   res
     .status(200)
     .json({ message: "Item removed from cart successfully", cart, cartItem });
-});
+};
 
 const calcTotalCost = async (cartId) => {
   const prices = await CartItems.findAll({

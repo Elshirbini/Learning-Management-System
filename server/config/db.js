@@ -1,5 +1,4 @@
 import { Sequelize } from "sequelize";
-import asyncHandler from "express-async-handler";
 import { configDotenv } from "dotenv";
 configDotenv();
 
@@ -14,7 +13,7 @@ const sequelize = new Sequelize(
     logging: false,
   }
 );
-asyncHandler(async () => {
+(async () => {
   await sequelize.authenticate();
   console.log("Connected to PostgreSQL successfully.");
 })();

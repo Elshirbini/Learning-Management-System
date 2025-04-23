@@ -1,10 +1,9 @@
-import asyncHandler from "express-async-handler";
 import { Course, User, Module, Content } from "../models/index.js";
 import { ApiError } from "../utils/apiError.js";
 import { Op } from "sequelize";
 import { deleteFile, uploadFile } from "../utils/fileManager.js";
 
-export const getCourses = asyncHandler(async (req, res, next) => {
+export const getCourses = async (req, res, next) => {
   const { page, pageSize } = req.query;
   const { category } = req.params;
 
@@ -25,9 +24,9 @@ export const getCourses = asyncHandler(async (req, res, next) => {
   if (!courses.rows) throw new ApiError("No courses found", 404);
 
   res.status(200).json(courses);
-});
+};
 
-export const getCourse = asyncHandler(async (req, res, next) => {
+export const getCourse = async (req, res, next) => {
   const { courseId } = req.params;
 
   const course = await Course.findByPk(courseId);
@@ -63,9 +62,9 @@ export const getCourse = asyncHandler(async (req, res, next) => {
   );
 
   res.status(200).json({ course, modulesWithContent });
-});
+};
 
-export const createCourse = asyncHandler(async (req, res, next) => {
+export const createCourse = async (req, res, next) => {
   const userId = req.userId;
   const { title, description, category, language, price } = req.body;
   const thumbnail = req.file;
@@ -90,9 +89,9 @@ export const createCourse = asyncHandler(async (req, res, next) => {
   await course.setInstructor(userData);
 
   res.status(201).json({ course });
-});
+};
 
-export const updateCourse = asyncHandler(async (req, res, next) => {
+export const updateCourse = async (req, res, next) => {
   const { courseId } = req.params;
   const { title, description, category, language, price } = req.body;
   const thumbnail = req.file;
@@ -126,9 +125,9 @@ export const updateCourse = asyncHandler(async (req, res, next) => {
     message: "Course updated successfully",
     course: updatedCourses[0],
   });
-});
+};
 
-export const deleteCourse = asyncHandler(async (req, res, next) => {
+export const deleteCourse = async (req, res, next) => {
   const { courseId } = req.params;
 
   const course = await Course.findByPk(courseId);
@@ -141,9 +140,9 @@ export const deleteCourse = asyncHandler(async (req, res, next) => {
   await course.destroy();
 
   res.status(200).json({ message: "Course deleted successfully" });
-});
+};
 
-export const searchCourse = asyncHandler(async (req, res, next) => {
+export const searchCourse = async (req, res, next) => {
   const { searchQuery } = req.query;
 
   if (!searchQuery) throw new ApiError("Search query is required", 403);
@@ -163,4 +162,4 @@ export const searchCourse = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json(courses);
-});
+};

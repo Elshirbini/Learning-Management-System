@@ -1,11 +1,10 @@
-import asyncHandler from "express-async-handler";
 import { ApiError } from "../utils/apiError.js";
 import { Course, Module, Content } from "../models/index.js";
 import { deleteFile, uploadFile } from "../utils/fileManager.js";
 import { Purchase } from "../models/purchases.js";
 
-export const getContent = asyncHandler(async (req, res, next) => {
-  const  userId = req.userId;
+export const getContent = async (req, res, next) => {
+  const userId = req.userId;
   const { contentId } = req.params;
 
   const content = await Content.findByPk(contentId);
@@ -31,9 +30,9 @@ export const getContent = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json(content);
-});
+};
 
-export const createContent = asyncHandler(async (req, res, next) => {
+export const createContent = async (req, res, next) => {
   const { title, order } = req.body;
   const { moduleId } = req.params;
   const file = req.file;
@@ -57,9 +56,9 @@ export const createContent = asyncHandler(async (req, res, next) => {
   });
 
   res.status(201).json({ message: "File uploaded successfully", content });
-});
+};
 
-export const updateContent = asyncHandler(async (req, res, next) => {
+export const updateContent = async (req, res, next) => {
   const { title, order } = req.body;
   const { contentId } = req.params;
   const file = req.file;
@@ -95,9 +94,9 @@ export const updateContent = asyncHandler(async (req, res, next) => {
   res
     .status(201)
     .json({ message: "File updated successfully", updatedContent });
-});
+};
 
-export const deleteContent = asyncHandler(async (req, res, next) => {
+export const deleteContent = async (req, res, next) => {
   const { contentId } = req.params;
 
   const content = await Content.findByPk(contentId);
@@ -108,4 +107,4 @@ export const deleteContent = asyncHandler(async (req, res, next) => {
   await content.destroy();
 
   res.status(200).json({ message: "File deleted successfully" });
-});
+};

@@ -1,9 +1,8 @@
-import asyncHandler from "express-async-handler";
 import { Content, Course, Module } from "../models/index.js";
 import { ApiError } from "../utils/apiError.js";
 import { deleteFile } from "../utils/fileManager.js";
 
-export const getModules = asyncHandler(async (req, res, next) => {
+export const getModules = async (req, res, next) => {
   const { courseId } = req.params;
 
   const modules = await Module.findAll({
@@ -16,9 +15,9 @@ export const getModules = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json(modules);
-});
+};
 
-export const createModule = asyncHandler(async (req, res, next) => {
+export const createModule = async (req, res, next) => {
   const { title, order } = req.body;
   const { courseId } = req.params;
 
@@ -31,9 +30,9 @@ export const createModule = asyncHandler(async (req, res, next) => {
     message: "Module created successfully",
     module,
   });
-});
+};
 
-export const updateModule = asyncHandler(async (req, res, next) => {
+export const updateModule = async (req, res, next) => {
   const { moduleId } = req.params;
   const { title, order } = req.body;
 
@@ -50,9 +49,9 @@ export const updateModule = asyncHandler(async (req, res, next) => {
     message: "Module updated successfully",
     module: updateModule[0],
   });
-});
+};
 
-export const deleteModule = asyncHandler(async (req, res, next) => {
+export const deleteModule = async (req, res, next) => {
   const { moduleId } = req.params;
 
   const module = await Module.findByPk(moduleId);
@@ -81,4 +80,4 @@ export const deleteModule = asyncHandler(async (req, res, next) => {
   await module.destroy();
 
   res.status(200).json({ message: "Module deleted successfully" });
-});
+};
