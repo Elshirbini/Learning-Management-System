@@ -5,26 +5,35 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+    restart: unless-stopped
     env_file: ./server/.env
-    depends_on:
-      - postgres
+    ports:
+      - "8080:8080"
     volumes:
       - ./server:/app
       - /app/node_modules
-    ports:
-      - 8080:8080
+    networks:
+      - lms-network
+    depends_on:
+      - postgres
 
   postgres:
     image: postgres:latest
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-2525}
       POSTGRES_DB: ${DB_NAME:-LMS}
     restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lms-network
 
 volumes:
   postgres_data:
+
+networks:
+  lms-network:
+    driver: bridge
